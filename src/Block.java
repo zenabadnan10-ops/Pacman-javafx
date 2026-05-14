@@ -1,7 +1,6 @@
 import javafx.scene.image.Image;
 import java.util.HashSet;
 
-/** A single tile-aligned entity: wall, dot, ghost, pacman, or power-up. */
 public class Block {
     public int x, y, width, height, startX, startY;
     public Image image;
@@ -12,7 +11,6 @@ public class Block {
     private final HashSet<Block> walls;
     private int speed;
 
-    /** Moving entity (ghost or pacman). */
     public Block(Image image, int x, int y, int size,
                  int tileSize, HashSet<Block> walls, int speed) {
         this.image = image;
@@ -23,8 +21,7 @@ public class Block {
         this.walls = walls;
         this.speed = speed;
     }
-
-    /** Static entity (wall, food, power-up). */
+    
     public Block(Image image, int x, int y, int w, int h) {
         this.image = image;
         this.x = this.startX = x;
