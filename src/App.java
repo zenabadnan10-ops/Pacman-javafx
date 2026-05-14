@@ -41,17 +41,12 @@ public class App extends Application {
         stage.show();
     }
 
-    // ------------------------------------------------------------------
-    //  MAIN MENU
-    // ------------------------------------------------------------------
     void showMainMenu() {
         PacmanAudio.playMainMenuMusic();
 
-        // Background canvas
         Canvas bg = new Canvas(W, H);
         drawMenuBg(bg.getGraphicsContext2D());
 
-        // Ghost parade
         HBox ghosts = new HBox(22);
         ghosts.setAlignment(Pos.CENTER);
         for (Color c : GHOST_COLORS) {
@@ -60,22 +55,18 @@ public class App extends Application {
             ghosts.getChildren().add(gc);
         }
 
-        // Title
         Text title = styledText("PAC-MAN", 56, FontWeight.EXTRA_BOLD, "#FFE000");
         Text sub   = styledText("J A V A F X   E D I T I O N", 13,
                                 FontWeight.NORMAL, "#888888");
 
-        // Dot divider
         Canvas div = new Canvas(W * 0.6, 12);
         drawDotRow(div.getGraphicsContext2D(), (int)(W * 0.6));
 
-        // Buttons
         Button play = menuButton("▶   PLAY", true);
         Button quit = menuButton("✕   QUIT", false);
         play.setOnAction(e -> startGame());
         quit.setOnAction(e -> { PacmanAudio.stopMusic(); stage.close(); });
 
-        // Blinking coin text
         Text coin = styledText("— INSERT COIN —", 13, FontWeight.BOLD, "#FFE000");
         Timeline blink = new Timeline(
             new KeyFrame(Duration.millis(550), e -> coin.setVisible(true)),
@@ -92,9 +83,6 @@ public class App extends Application {
         stage.setScene(new Scene(root, W, H));
     }
 
-    // ------------------------------------------------------------------
-    //  START GAME
-    // ------------------------------------------------------------------
     void startGame() {
         PacmanAudio.stopMusic();
         PacmanAudio.intro();
@@ -110,9 +98,6 @@ public class App extends Application {
         }, "music-start").start();
     }
 
-    // ------------------------------------------------------------------
-    //  DRAWING HELPERS
-    // ------------------------------------------------------------------
     private void drawMenuBg(GraphicsContext gc) {
         gc.setFill(Color.BLACK); gc.fillRect(0, 0, W, H);
         gc.setFill(Color.web("#1a1a1a"));
