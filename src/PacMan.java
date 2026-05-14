@@ -16,7 +16,7 @@ public class PacMan extends Pane {
     private final App app;
     private final Random rng = new Random();
 
-    int score = 0, lives = 3;
+    int score = 0, lives = 1;
     boolean gameOver = false;
     int overlay = GameRenderer.NONE; 
     int blinkTick, dotsEaten, totalDots, ghostsEaten;
@@ -283,6 +283,7 @@ public class PacMan extends Pane {
             if (completedLevel >= 3) { fullRestart(); }
             else {
                 currentLevel = completedLevel + 1;
+                lives = currentLevel;
                 applyLevel(currentLevel);
                 loadMap(); resetPositions();
                 overlay = GameRenderer.NONE;
@@ -295,7 +296,7 @@ public class PacMan extends Pane {
 
     private void fullRestart() {
         PacmanAudio.stopMusic(); PacmanAudio.intro();
-        score = 0; lives = 3; gameOver = false;
+        score = 0; lives = 1; gameOver = false;
         currentLevel = 1; ghostCombo = 0; dotsSinceWaka = 0;
         overlay = GameRenderer.NONE; lastSpawnTime = 0;
         applyLevel(1);
