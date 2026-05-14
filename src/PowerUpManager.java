@@ -1,16 +1,17 @@
 import javafx.scene.image.Image;
 
-import java.util.HashSet;
 import java.util.Random;
 
-/** Manages power-up spawning and active-effect timers. */
 public class PowerUpManager {
 
-    public static final int EFFECT_TICKS = 200;
-
-    public Block  active;
-    public int    displayTimer;
-    public int    effectTimer;
+    public static final int EFFECT_TICKS   = 200; 
+    public static final int DISPLAY_TICKS  = 140;
+    public static final int COOLDOWN_TICKS = 100; 
+    public Block   active;
+    public int     displayTimer;
+    public int     effectTimer;
+    public int     cooldownTimer;
+    public boolean waitingForEffectEnd; 
     public boolean isFast, isFrozen, isInvincible;
 
     private final Image speedImg, freezeImg, scaredImg;
@@ -25,9 +26,8 @@ public class PowerUpManager {
         this.random    = new Random();
     }
 
-    /** Try to spawn a power-up at a random open tile. */
     public void trySpawn(String[] map, int tileSize) {
-        if (active != null) return;
+        if (active != null || cooldownTimer > 0 || waitingForEffectEnd) return;
         int attempts = 0, r, c;
         do {
             r = random.nextInt(map.length);
@@ -35,37 +35,45 @@ public class PowerUpManager {
             if (++attempts > 200) return;
         } while (map[r].charAt(c) != ' ');
         active       = new Block(options[random.nextInt(3)],
-                                 c * tileSize, r * tileSize, tileSize, tileSize);
-        displayTimer = EFFECT_TICKS;
+                c * tileSize, r * tileSize, tileSize, tileSize);
+        displayTimer = DISPLAY_TICKS;
     }
 
-    /** Tick down timers each game step. */
     public void tick() {
-        if (effectTimer > 0 && --effectTimer == 0)
+        if (effectTimer > 0 && --effectTimer == 0) {
             isFast = isFrozen = isInvincible = false;
-        if (displayTimer > 0 && --displayTimer == 0)
+            waitingForEffectEnd = false;
+            cooldownTimer = COOLDOWN_TICKS; 
+        }
+        if (displayTimer > 0 && --displayTimer == 0) {
             active = null;
+            cooldownTimer = COOLDOWN_TICKS; 
+        }
+        if (cooldownTimer > 0) cooldownTimer--;
     }
 
-    /** Apply the collected power-up effect. */
     public void collect() {
         isFast = isFrozen = isInvincible = false;
         if      (active.image == speedImg)  isFast       = true;
         else if (active.image == freezeImg) isFrozen     = true;
         else if (active.image == scaredImg) isInvincible = true;
-        effectTimer  = EFFECT_TICKS;
-        active       = null;
-        displayTimer = 0;
+        effectTimer         = EFFECT_TICKS;
+        waitingForEffectEnd = true;  
+        active              = null;
+        displayTimer        = 0;
+        cooldownTimer       = 0;    
     }
 
     public void reset() {
-        active = null;
-        effectTimer = displayTimer = 0;
+        active              = null;
+        effectTimer         = 0;
+        displayTimer        = 0;
+        cooldownTimer       = 0;
+        waitingForEffectEnd = false;
         isFast = isFrozen = isInvincible = false;
     }
 
-    /** Label for the HUD timer bar. */
     public String effectLabel() {
-        return isFast ? "SPEED" : isFrozen ? "FREEZE" : "POWER";
+        return isFast ? "SPEED" : isFrozen ? "FREEZE" : isInvincible ? "INVINCIBLE" : "NONE";
     }
 }
