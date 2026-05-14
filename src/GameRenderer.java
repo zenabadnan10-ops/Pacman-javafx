@@ -6,10 +6,8 @@ import javafx.scene.text.FontWeight;
 
 import java.util.HashSet;
 
-/** Handles all canvas rendering: world, HUD, and overlay screens. */
 public class GameRenderer {
 
-    // Overlay state constants (shared with PacMan)
     public static final int NONE           = 0;
     public static final int GAME_OVER      = 1;
     public static final int LEVEL_COMPLETE = 2;
@@ -24,9 +22,6 @@ public class GameRenderer {
         this.boardHeight = boardHeight;
     }
 
-    // ------------------------------------------------------------------
-    //  WORLD
-    // ------------------------------------------------------------------
     public void drawWorld(HashSet<Block> walls, HashSet<Block> foods,
                           Block activePowerUp, HashSet<Block> ghosts,
                           Block pacman, boolean isInvincible, boolean isFrozen,
@@ -67,9 +62,6 @@ public class GameRenderer {
             gc.drawImage(pacman.image, pacman.x, pacman.y, pacman.width, pacman.height);
     }
 
-    // ------------------------------------------------------------------
-    //  HUD
-    // ------------------------------------------------------------------
     public void drawHUD(int score, int lives, int currentLevel,
                         int effectTimer, String effectLabel, Color levelAccent) {
         gc.setFill(Color.BLACK);
@@ -99,9 +91,6 @@ public class GameRenderer {
         }
     }
 
-    // ------------------------------------------------------------------
-    //  OVERLAYS
-    // ------------------------------------------------------------------
     public void drawOverlay(int state, int blinkTick,
                             int score, int lives, int currentLevel,
                             int completedLevel, int dotsEaten, int totalDots,
@@ -179,9 +168,6 @@ public class GameRenderer {
         centeredSmallText("M        →  MAIN MENU", px, py + 138, pw, Color.web("#aaaaaa"));
     }
 
-    // ------------------------------------------------------------------
-    //  DRAWING PRIMITIVES
-    // ------------------------------------------------------------------
     private void dimScreen(double alpha) {
         gc.setFill(Color.color(0, 0, 0, alpha));
         gc.fillRect(0, 0, boardWidth, boardHeight);
@@ -200,7 +186,6 @@ public class GameRenderer {
         gc.strokeRoundRect(px, py, pw, ph, 12, 12);
     }
 
-    /** Approximate character width for Courier New (monospace): fontSize * 0.60 */
     private double charWidth(String text, double fontSize) {
         return text.length() * fontSize * 0.60;
     }
@@ -245,9 +230,6 @@ public class GameRenderer {
         gc.fillText(value, px + pw - 24 - charWidth(value, 16), y);
     }
 
-    // ------------------------------------------------------------------
-    //  HELPERS
-    // ------------------------------------------------------------------
     public static String levelLabel(int level) {
         return switch (level) { case 2 -> "LVL 2  MEDIUM"; case 3 -> "LVL 3  HARD"; default -> "LVL 1  EASY"; };
     }
