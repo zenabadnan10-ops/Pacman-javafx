@@ -1,16 +1,10 @@
 import javax.sound.sampled.*;
 
-/**
- * PacmanAudio — synthesized audio engine. No external audio files needed.
- * Music vol ≈ 0.15–0.22 (background); SFX vol ≈ 0.65–0.90 (punchy).
- */
+
 public class PacmanAudio {
 
-    private static final int SR = 44100; // sample rate
+    private static final int SR = 44100; 
 
-    // ------------------------------------------------------------------
-    //  WAVEFORMS
-    // ------------------------------------------------------------------
     private static double sine(double p)     { return Math.sin(p); }
     private static double square(double p)   { return Math.sin(p) >= 0 ? 1.0 : -1.0; }
     private static double triangle(double p) {
@@ -21,7 +15,6 @@ public class PacmanAudio {
         return 2 * ((p % (2*Math.PI)) / (2*Math.PI)) - 1;
     }
 
-    // ADSR envelope
     private static double adsr(int i, int frames, double a, double d, double s, double r) {
         double t = (double)i / SR, total = (double)frames / SR, se = total - r;
         if (t < a)      return t / a;
@@ -31,10 +24,6 @@ public class PacmanAudio {
         return 0;
     }
 
-    // ------------------------------------------------------------------
-    //  BUFFER BUILDERS
-    // ------------------------------------------------------------------
-    /** waveType: 0=sine 1=square 2=triangle 3=sawtooth */
     private static byte[] buildWave(double freq, double dur, double vol,
                                     int wt, double a, double d, double s, double r) {
         int frames = (int)(SR * dur);
@@ -91,9 +80,6 @@ public class PacmanAudio {
 
     private static byte[] silence(int ms) { return new byte[(int)(SR * ms / 1000.0) * 2]; }
 
-    // ------------------------------------------------------------------
-    //  PLAYBACK
-    // ------------------------------------------------------------------
     private static void play(byte[] buf) {
         new Thread(() -> {
             try {
@@ -107,9 +93,6 @@ public class PacmanAudio {
         }, "sfx").start();
     }
 
-    // ------------------------------------------------------------------
-    //  BACKGROUND MUSIC
-    // ------------------------------------------------------------------
     private static volatile Thread  musicThread;
     private static volatile boolean musicRunning;
 
@@ -122,7 +105,6 @@ public class PacmanAudio {
         }
     }
 
-    /** { freq, durationSec, gapMs } — freq 0 = rest */
     private static void loopMelody(String name, double[][] mel, double vol) {
         stopMusic();
         musicRunning = true;
@@ -150,9 +132,6 @@ public class PacmanAudio {
         musicThread.start();
     }
 
-    // ------------------------------------------------------------------
-    //  MUSIC TRACKS
-    // ------------------------------------------------------------------
     public static void playMainMenuMusic() {
         loopMelody("music-menu", new double[][]{
             {523,.11,18},{659,.11,18},{784,.11,18},{1047,.11,18},
@@ -185,9 +164,6 @@ public class PacmanAudio {
         }
     }
 
-    // ------------------------------------------------------------------
-    //  SOUND EFFECTS
-    // ------------------------------------------------------------------
     public static void intro() {
         new Thread(() -> {
             try {
