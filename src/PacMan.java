@@ -7,53 +7,36 @@ import javafx.scene.image.Image;
 import java.util.HashSet;
 import java.util.Random;
 
-/**
- * Main game pane. Delegates rendering to GameRenderer, power-ups to
- * PowerUpManager, and level data to LevelConfig.
- */
 public class PacMan extends Pane {
 
-    // ------------------------------------------------------------------
-    //  CONSTANTS
-    // ------------------------------------------------------------------
     private static final long MOVE_NS = 50_000_000L;
     private static final char[] DIRS = {'U', 'D', 'L', 'R'};
 
-    // ------------------------------------------------------------------
-    //  STATE
-    // ------------------------------------------------------------------
     private final int boardWidth, boardHeight, tileSize;
     private final App app;
     private final Random rng = new Random();
 
-    // Game state
     int score = 0, lives = 3;
     boolean gameOver = false;
-    int overlay = GameRenderer.NONE; // NONE / GAME_OVER / LEVEL_COMPLETE / PAUSED
+    int overlay = GameRenderer.NONE; 
     int blinkTick, dotsEaten, totalDots, ghostsEaten;
     int currentLevel = 1, completedLevel = 1;
     int ghostCombo, dotsSinceWaka;
     char requestedDir = ' ';
 
-    // Entity sets
     HashSet<Block> walls = new HashSet<>(), foods = new HashSet<>(), ghosts = new HashSet<>();
     Block pacman;
 
-    // Sub-systems
     private LevelConfig     cfg;
     private PowerUpManager  powerUps;
     private GameRenderer    renderer;
     private AnimationTimer  gameLoop;
     private long lastSpawnTime, lastMoveTime;
 
-    // Images
     private Image wallImg, blueGhost, orangeGhost, pinkGhost, redGhost;
     private Image pacUp, pacDown, pacLeft, pacRight;
     private Image speedImg, freezeImg, scaredImg;
 
-    // ------------------------------------------------------------------
-    //  CONSTRUCTOR
-    // ------------------------------------------------------------------
     public PacMan(int boardWidth, int boardHeight, int tileSize,
                   int rowCount, int columnCount, App app) {
         this.boardWidth = boardWidth; this.boardHeight = boardHeight;
@@ -74,9 +57,6 @@ public class PacMan extends Pane {
 
     public int getCurrentLevel() { return currentLevel; }
 
-    // ------------------------------------------------------------------
-    //  SETUP
-    // ------------------------------------------------------------------
     private void applyLevel(int level) {
         cfg = LevelConfig.forLevel(level, tileSize);
     }
@@ -92,13 +72,12 @@ public class PacMan extends Pane {
     }
 
     private Image img(String name) {
-        // Filesystem: images/ folder at project root (next to src/)
         java.io.File f = new java.io.File("images/" + name);
         if (f.exists()) {
             try { return new Image(new java.io.FileInputStream(f)); }
             catch (java.io.FileNotFoundException ignored) {}
         }
-        // Fallback: classpath (when packaged into a JAR with images/ inside)
+
         var s = getClass().getResourceAsStream("/images/" + name);
         if (s != null) return new Image(s);
         System.err.println("Missing image: " + name);
@@ -133,9 +112,6 @@ public class PacMan extends Pane {
         ghosts.add(new Block(img, x, y, tileSize, tileSize, walls, cfg.ghostSpeed));
     }
 
-    // ------------------------------------------------------------------
-    //  GAME LOOP
-    // ------------------------------------------------------------------
     private void startLoop() {
         gameLoop = new AnimationTimer() {
             @Override public void handle(long now) {
@@ -152,29 +128,22 @@ public class PacMan extends Pane {
         gameLoop.start();
     }
 
-    // ------------------------------------------------------------------
-    //  MOVE
-    // ------------------------------------------------------------------
     private void move() {
         if (gameOver || overlay != GameRenderer.NONE) return;
         powerUps.tick();
 
-        // Pacman (2 steps when fast)
         for (int i = 0, steps = powerUps.isFast ? 2 : 1; i < steps; i++)
             movePacman();
 
-        // Ghosts
         if (!powerUps.isFrozen)
             for (Block g : ghosts) moveGhost(g);
 
-        // Power-up collection
         if (powerUps.active != null && pacman.collides(powerUps.active)) {
             powerUps.collect();
             score += 50;
             PacmanAudio.powerPellet();
         }
 
-        // Ghost collision
         for (Block g : ghosts) {
             if (!g.collides(pacman)) continue;
             if (powerUps.isInvincible) {
@@ -186,7 +155,6 @@ public class PacMan extends Pane {
             }
         }
 
-        // Dot collection
         int before = foods.size();
         foods.removeIf(f -> { if (pacman.collides(f)) { score += 10; return true; } return false; });
         int eaten = before - foods.size();
@@ -248,9 +216,6 @@ public class PacMan extends Pane {
         delayedMusic(1200);
     }
 
-    // ------------------------------------------------------------------
-    //  HELPERS
-    // ------------------------------------------------------------------
     public void resetPositions() {
         pacman.reset(); pacman.updateVelocity(); requestedDir = ' ';
         for (Block g : ghosts) { g.reset(); g.updateDirection(DIRS[rng.nextInt(4)]); }
@@ -272,9 +237,6 @@ public class PacMan extends Pane {
         }, "music-delay").start();
     }
 
-    // ------------------------------------------------------------------
-    //  DRAW
-    // ------------------------------------------------------------------
     private void draw() {
         renderer.drawWorld(walls, foods, powerUps.active, ghosts, pacman,
                            powerUps.isInvincible, powerUps.isFrozen,
@@ -286,9 +248,6 @@ public class PacMan extends Pane {
                                  completedLevel, dotsEaten, totalDots, ghostsEaten);
     }
 
-    // ------------------------------------------------------------------
-    //  INPUT
-    // ------------------------------------------------------------------
     public void handleKeyPressed(KeyEvent e) {
         switch (e.getCode()) {
             case UP,    W -> { if (overlay == GameRenderer.NONE) requestedDir = 'U'; }
