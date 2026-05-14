@@ -13,7 +13,7 @@ public class LevelConfig {
         "X XX XXX X XXX XX X",
         "X                 X",
         "X XX X XXXXX X XX X",
-        "X   X    X   X    X",
+        "X        X   X    X",
         "XXXX XX  X  XX XXXX",
         "OOOX X         XOOO",
         "XXXX X XXXXX X XXXX",
