@@ -1,12 +1,7 @@
 import javafx.scene.paint.Color;
 
-/** Holds all data that changes between levels: map, difficulty, and theme. */
 public class LevelConfig {
 
-    // ------------------------------------------------------------------
-    //  MAZE LAYOUTS  (19 cols × 21 rows)
-    //  X=wall  ' '=dot  O=open  P=pacman  r/b/o/p=ghosts
-    // ------------------------------------------------------------------
     private static final String[] MAP_1 = {
         "XXXXXXXXXXXXXXXXXXX",
         "X        X        X",
@@ -79,9 +74,6 @@ public class LevelConfig {
         "XXXXXXXXXXXXXXXXXXX"
     };
 
-    // ------------------------------------------------------------------
-    //  DIFFICULTY
-    // ------------------------------------------------------------------
     public final int    tileSize;
     public final int    ghostSpeed;
     public final int    ghostTurnNumerator;
