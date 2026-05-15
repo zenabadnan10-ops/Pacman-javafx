@@ -18,7 +18,7 @@ public class PacMan extends Pane {
 
     int score = 0, lives = 1;
     boolean gameOver = false;
-    int overlay = GameRenderer.NONE; 
+    int overlay = GameRenderer.NONE;
     int blinkTick, dotsEaten, totalDots, ghostsEaten;
     int currentLevel = 1, completedLevel = 1;
     int ghostCombo, dotsSinceWaka;
@@ -27,7 +27,7 @@ public class PacMan extends Pane {
     HashSet<Block> walls = new HashSet<>(), foods = new HashSet<>(), ghosts = new HashSet<>();
     Block pacman;
 
-    private LevelConfig     cfg;
+    private Level           cfg;      
     private PowerUpManager  powerUps;
     private GameRenderer    renderer;
     private AnimationTimer  gameLoop;
@@ -59,6 +59,7 @@ public class PacMan extends Pane {
 
     private void applyLevel(int level) {
         cfg = LevelConfig.forLevel(level, tileSize);
+        lives = cfg.startingLives();
     }
 
     private void loadImages() {
@@ -77,7 +78,6 @@ public class PacMan extends Pane {
             try { return new Image(new java.io.FileInputStream(f)); }
             catch (java.io.FileNotFoundException ignored) {}
         }
-
         var s = getClass().getResourceAsStream("/images/" + name);
         if (s != null) return new Image(s);
         System.err.println("Missing image: " + name);
@@ -140,6 +140,7 @@ public class PacMan extends Pane {
 
         if (powerUps.active != null && pacman.collides(powerUps.active)) {
             powerUps.collect();
+            cfg.onPowerUpCollected(this, powerUps); 
             score += 50;
             PacmanAudio.powerPellet();
         }
@@ -148,7 +149,8 @@ public class PacMan extends Pane {
             if (!g.collides(pacman)) continue;
             if (powerUps.isInvincible) {
                 g.reset(); g.updateDirection(DIRS[rng.nextInt(4)]);
-                score += 100 * (ghostCombo + 1); ghostsEaten++;
+                score += cfg.ghostScore() * (ghostCombo + 1); 
+                ghostsEaten++;
                 PacmanAudio.ghostEaten(ghostCombo++);
             } else if (!powerUps.isFrozen) {
                 loseLife(); return;
@@ -156,10 +158,17 @@ public class PacMan extends Pane {
         }
 
         int before = foods.size();
-        foods.removeIf(f -> { if (pacman.collides(f)) { score += 10; return true; } return false; });
+        foods.removeIf(f -> {
+            if (pacman.collides(f)) {
+                score += cfg.dotScore(); 
+                return true;
+            }
+            return false;
+        });
         int eaten = before - foods.size();
         if (eaten > 0) {
             dotsEaten += eaten;
+            cfg.onDotEaten(this, dotsEaten);
             if ((dotsSinceWaka += eaten) >= 2) { PacmanAudio.waka(); dotsSinceWaka = 0; }
         }
 
@@ -184,8 +193,8 @@ public class PacMan extends Pane {
         }
         pacman.x += pacman.velocityX;
         pacman.y += pacman.velocityY;
-        if      (pacman.x < 0)                        pacman.x = boardWidth - pacman.width;
-        else if (pacman.x + pacman.width > boardWidth) pacman.x = 0;
+        if      (pacman.x < 0)                         pacman.x = boardWidth - pacman.width;
+        else if (pacman.x + pacman.width > boardWidth)  pacman.x = 0;
         for (Block w : walls) {
             if (pacman.collides(w)) { pacman.x -= pacman.velocityX; pacman.y -= pacman.velocityY; break; }
         }
@@ -254,7 +263,6 @@ public class PacMan extends Pane {
             case DOWN,  S -> { if (overlay == GameRenderer.NONE) requestedDir = 'D'; }
             case LEFT,  A -> { if (overlay == GameRenderer.NONE) requestedDir = 'L'; }
             case RIGHT, D -> { if (overlay == GameRenderer.NONE) requestedDir = 'R'; }
-
             case P -> togglePause();
             case M -> { if (overlay == GameRenderer.PAUSED) exitToMenu(); }
             case ESCAPE -> {
@@ -283,8 +291,7 @@ public class PacMan extends Pane {
             if (completedLevel >= 3) { fullRestart(); }
             else {
                 currentLevel = completedLevel + 1;
-                lives = currentLevel;
-                applyLevel(currentLevel);
+                applyLevel(currentLevel);   
                 loadMap(); resetPositions();
                 overlay = GameRenderer.NONE;
                 lastSpawnTime = 0;
@@ -296,10 +303,10 @@ public class PacMan extends Pane {
 
     private void fullRestart() {
         PacmanAudio.stopMusic(); PacmanAudio.intro();
-        score = 0; lives = 1; gameOver = false;
+        score = 0; gameOver = false;
         currentLevel = 1; ghostCombo = 0; dotsSinceWaka = 0;
         overlay = GameRenderer.NONE; lastSpawnTime = 0;
-        applyLevel(1);
+        applyLevel(1);           
         loadMap(); resetPositions();
         delayedMusic(1800);
     }
